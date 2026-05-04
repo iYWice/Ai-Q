@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use Illuminate\Support\Facades\DB;
 
 test('login screen can be rendered', function () {
     $response = $this->get('/login');
@@ -17,7 +18,7 @@ test('users can authenticate using the login screen', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect('/student/dashboard');
 });
 
 test('users can not authenticate with invalid password', function () {
@@ -26,6 +27,20 @@ test('users can not authenticate with invalid password', function () {
     $this->post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
+    ]);
+
+    $this->assertGuest();
+});
+
+test('users can not authenticate with an invalid stored password hash', function () {
+    $user = User::factory()->create();
+    DB::table('users')
+        ->where('id', $user->id)
+        ->update(['password' => 'not-a-valid-hash']);
+
+    $this->post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
     ]);
 
     $this->assertGuest();
