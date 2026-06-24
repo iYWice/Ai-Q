@@ -1,36 +1,101 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScoreForge AI</title>
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+</head>
+<body class="bg-gray-100">
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    <div class="flex min-h-screen">
 
-        <!-- Scripts -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    </head>
-    <body class="font-sans antialiased">
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            @include('layouts.navigation')
+        {{-- Sidebar --}}
+        <aside class="w-64 bg-slate-900 text-white">
 
-            <!-- Page Heading -->
-            @isset($header)
-                <header class="bg-white dark:bg-gray-800 shadow">
-                    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        {{ $header }}
-                    </div>
-                </header>
-            @endisset
+            <div class="p-5 border-b border-slate-700">
+                <h1 class="text-xl font-bold">
+                    ScoreForge AI
+                </h1>
+            </div>
 
-            <!-- Page Content -->
-            <main>
-                {{ $slot }}
-            </main>
-        </div>
-    </body>
+            <nav class="p-4 space-y-2">
+
+                {{-- Teacher Menu --}}
+                @if(auth()->user()->role === 'teacher')
+
+                    <a href="/teacher/dashboard"
+                       class="block px-3 py-2 rounded hover:bg-slate-700">
+                        Dashboard
+                    </a>
+
+                    <a href="/teacher/exams"
+                       class="block px-3 py-2 rounded hover:bg-slate-700">
+                        My Exams
+                    </a>
+
+                @endif
+
+
+                {{-- Student Menu --}}
+                @if(auth()->user()->role === 'student')
+
+                    <a href="/student/dashboard"
+                       class="block px-3 py-2 rounded hover:bg-slate-700">
+                        Dashboard
+                    </a>
+
+                    <a href="/student/exam"
+                       class="block px-3 py-2 rounded hover:bg-slate-700">
+                        Take Exam
+                    </a>
+
+                @endif
+
+            </nav>
+
+        </aside>
+
+
+        {{-- Main Content --}}
+        <main class="flex-1">
+
+            {{-- Topbar --}}
+            <header class="bg-white shadow px-6 py-4 flex justify-between">
+
+                <h2 class="font-semibold text-lg">
+                    @yield('title')
+                </h2>
+
+                <div class="flex items-center gap-4">
+
+                    <span>
+                        {{ auth()->user()->name }}
+                    </span>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+
+                        <button
+                            class="bg-red-500 text-white px-3 py-1 rounded">
+                            Logout
+                        </button>
+                    </form>
+
+                </div>
+
+            </header>
+
+
+            {{-- Page Content --}}
+            <section class="p-6">
+                @yield('content')
+            </section>
+
+        </main>
+
+    </div>
+
+</body>
 </html>

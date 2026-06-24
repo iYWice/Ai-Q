@@ -11,6 +11,18 @@ class Answer extends Model
 {
     use HasFactory;
 
+    protected $fillable = [
+        'title',
+        'exam_code',
+        'subject_id',
+        'class_id',
+        'created_by',
+        'duration',
+        'total_points',
+        'passing_score',
+        'status',
+    ];
+
     public function attempt()
     {
         return $this->belongsTo(ExamAttempt::class, 'attempt_id');

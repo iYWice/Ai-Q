@@ -11,6 +11,22 @@ use Illuminate\Database\Eloquent\Model;
 class Exam extends Model
 {
     use HasFactory;
+    protected $fillable = [
+        'id',
+        'title',
+        'exam_code',
+        'subject_id',
+        'class_id',
+        'exam_code',
+        'time_limit',
+        'total_items',
+        'created_by',
+        'created_at',
+        'status',
+        'duration',
+        'passing_score',
+    ];
+
 
     public function subject()
     {

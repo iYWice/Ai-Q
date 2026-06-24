@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Student\ExamAttemptController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -27,6 +28,11 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get('/student/dashboard', function () {
         return view('student.dashboard');
     });
+    Route::middleware(['auth', 'role:student'])->group(function () {
+
+        Route::get('/student/exam', [ExamAttemptController::class, 'enterCode']);
+        Route::post('/student/exam/start', [ExamAttemptController::class, 'startExam']);
+    });
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -34,7 +40,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
         return view('admin.dashboard');
     });
 });
-require __DIR__.'/auth.php';
-require __DIR__.'/admin.php';
-require __DIR__.'/teacher.php';
-require __DIR__.'/student.php';
+require __DIR__ . '/auth.php';
+require __DIR__ . '/admin.php';
+require __DIR__ . '/teacher.php';
+require __DIR__ . '/student.php';
