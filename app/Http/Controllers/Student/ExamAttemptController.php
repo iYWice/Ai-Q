@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Student;
 
 use App\Http\Controllers\Controller;
+use App\Models\Answer;
 use App\Models\Exam;
 use App\Models\ExamAttempt;
 use Illuminate\Http\Request;
-use App\Models\ExamAnswer;
-use App\Models\Question;
-
 
 class ExamAttemptController extends Controller
 {
@@ -16,127 +14,102 @@ class ExamAttemptController extends Controller
     {
         return view('student.enter-code');
     }
+
     public function showCodeForm()
     {
         return view('student.enter-code');
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Enter Exam Code
+    |--------------------------------------------------------------------------
+    */
     public function startExam(Request $request)
     {
-        $exam = Exam::where('exam_code', $request->exam_code)
-            ->where('status', 'published')
+        $request->validate([
+            'exam_code' => 'required'
+        ]);
+
+        $exam = Exam::where(
+            'exam_code',
+            strtoupper($request->exam_code)
+        )
+            ->where(
+                'status',
+                'published'
+            )
             ->first();
 
         if (!$exam) {
-            return back()->withErrors(['Invalid exam code']);
+
+            return back()->with(
+                'error',
+                'Invalid or unavailable exam code.'
+            );
         }
 
-        $attempt = ExamAttempt::create([
-            'exam_id' => $exam->id,
-            'student_id' => auth()->id(),
-            'started_at' => now(),
-        ]);
+        $existingAttempt = ExamAttempt::where(
+            'exam_id',
+            $exam->id
+        )
+            ->where(
+                'student_id',
+                auth()->id()
+            )
+            ->whereNotNull('submitted_at')
+            ->first();
 
-        $questions = $exam->questions()->with('options')->get();
+        /*
+        ------------------------------------------------
+        Already Taken
+        ------------------------------------------------
+        */
 
-        return view('student.exam.take', compact('exam', 'attempt', 'questions'));
-    }
-    public function takeExam(ExamAttempt $attempt)
-    {
-        $attempt->load(
+        if ($existingAttempt) {
 
-            'exam.questions.options'
-
-        );
+            return redirect()->route(
+                'student.exam.result',
+                $existingAttempt->id
+            );
+        }
 
         return view(
-
-            'student.exam.take',
-
-            compact('attempt')
-
+            'student.exam.instructions',
+            compact('exam')
         );
     }
-    public function submitExam(Request $request, $attemptId)
-    {
-        $attempt = ExamAttempt::findOrFail($attemptId);
 
-        $questions = $attempt->exam->questions;
-
-        $score = 0;
-
-        $total = 0;
-
-        foreach ($questions as $question) {
-
-            $studentAnswer =
-                $request->answers[$question->id] ?? '';
-
-            $correct = false;
-
-            if ($question->question_type == 'mcq') {
-
-                $correct =
-                    $studentAnswer ==
-                    $question->correct_answer;
-            } elseif ($question->question_type == 'tf') {
-
-                $correct =
-                    strtolower(trim($studentAnswer))
-                    ==
-                    strtolower(trim($question->correct_answer));
-            } else {
-
-                $correct =
-                    strtolower(trim($studentAnswer))
-                    ==
-                    strtolower(trim($question->correct_answer));
-            }
-
-            Answer::create([
-
-                'attempt_id' => $attempt->id,
-
-                'question_id' => $question->id,
-
-                'answer_text' => $studentAnswer,
-
-                'is_correct' => $correct,
-
-            ]);
-
-            $total += $question->points;
-
-            if ($correct) {
-
-                $score += $question->points;
-            }
-        }
-
-        $attempt->update([
-
-            'score' => $score,
-
-            'total_score' => $total,
-
-            'submitted_at' => now(),
-
-            'status' => 'completed',
-
-        ]);
-
-        return redirect()
-
-            ->route('student.exam.result', $attempt->id)
-
-            ->with('success', 'Exam submitted successfully.');
-    }
+    /*
+    |--------------------------------------------------------------------------
+    | Start Exam
+    |--------------------------------------------------------------------------
+    */
     public function beginExam(Request $request)
     {
         $exam = Exam::findOrFail(
             $request->exam_id
         );
 
+        $existingAttempt = ExamAttempt::where(
+            'exam_id',
+            $exam->id
+        )
+            ->where(
+                'student_id',
+                auth()->id()
+            )
+            ->whereNotNull('submitted_at')
+            ->first();
+
+        if ($existingAttempt) {
+
+            return redirect()->route(
+                'student.exam.result',
+                $existingAttempt->id
+            );
+        }
+
         $attempt = ExamAttempt::create([
 
             'exam_id' => $exam->id,
@@ -145,26 +118,199 @@ class ExamAttemptController extends Controller
 
             'started_at' => now(),
 
+            'status' => 'ongoing',
+
         ]);
 
-        return redirect(
-
-            "/student/exam/{$attempt->id}/take"
-
+        return redirect()->route(
+            'student.exam.take',
+            $attempt->id
         );
     }
-    public function result($attemptId)
-    {
-        $attempt = ExamAttempt::with('exam')
 
-            ->findOrFail($attemptId);
+    /*
+    |--------------------------------------------------------------------------
+    | Take Exam
+    |--------------------------------------------------------------------------
+    */
+    public function takeExam(
+        ExamAttempt $attempt
+    ) {
+        $attempt->load(
+            'exam.questions.options'
+        );
 
         return view(
-
-            'student.exam.result',
-
+            'student.exam.take',
             compact('attempt')
+        );
+    }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Submit Exam
+    |--------------------------------------------------------------------------
+    */
+    public function submitExam(
+        Request $request,
+        ExamAttempt $attempt
+    ) {
+        $attempt->load(
+            'exam.questions.options'
+        );
+
+        $score = 0;
+
+        $totalScore = 0;
+
+        foreach (
+            $attempt->exam->questions
+            as $question
+        ) {
+
+            $studentAnswer =
+                $request->answers[$question->id]
+                ?? '';
+
+            $isCorrect = false;
+
+            /*
+            --------------------------------
+            MCQ
+            --------------------------------
+            */
+
+            if (
+                $question->question_type
+                == 'mcq'
+            ) {
+
+                $isCorrect =
+                    trim($studentAnswer)
+                    ==
+                    trim(
+                        $question->correct_answer
+                    );
+            }
+
+            /*
+            --------------------------------
+            TRUE / FALSE
+            --------------------------------
+            */ elseif (
+                $question->question_type
+                == 'tf'
+            ) {
+
+                $isCorrect =
+                    strtolower(
+                        trim($studentAnswer)
+                    )
+                    ==
+                    strtolower(
+                        trim(
+                            $question->correct_answer
+                        )
+                    );
+            }
+
+            /*
+            --------------------------------
+            IDENTIFICATION
+            --------------------------------
+            */ elseif (
+                $question->question_type
+                ==
+                'identification'
+            ) {
+
+                $isCorrect =
+                    strtolower(
+                        trim($studentAnswer)
+                    )
+                    ==
+                    strtolower(
+                        trim(
+                            $question->correct_answer
+                        )
+                    );
+            }
+
+            /*
+            --------------------------------
+            Save Answer
+            --------------------------------
+            */
+
+            Answer::create([
+
+                'attempt_id'
+                => $attempt->id,
+
+                'question_id'
+                => $question->id,
+
+                'answer_text'
+                => $studentAnswer,
+
+                'is_correct'
+                => $isCorrect,
+
+            ]);
+
+            $totalScore +=
+                $question->points;
+
+            if ($isCorrect) {
+
+                $score +=
+                    $question->points;
+            }
+        }
+
+        /*
+        --------------------------------
+        Update Attempt
+        --------------------------------
+        */
+
+        $attempt->update([
+
+            'score'
+            => $score,
+
+            'total_score'
+            => $totalScore,
+
+            'submitted_at'
+            => now(),
+
+            'status'
+            => 'completed',
+
+        ]);
+
+        return redirect()->route(
+            'student.exam.result',
+            $attempt->id
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Result Page
+    |--------------------------------------------------------------------------
+    */
+    public function result(
+        ExamAttempt $attempt
+    ) {
+        $attempt->load(
+            'exam'
+        );
+
+        return view(
+            'student.exam.result',
+            compact('attempt')
         );
     }
 }

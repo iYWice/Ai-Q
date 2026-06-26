@@ -46,10 +46,6 @@
                         Dashboard
                     </a>
 
-                    <a href="/student/exam"
-                       class="block px-3 py-2 rounded hover:bg-slate-700">
-                        Take Exam
-                    </a>
 
                 @endif
 

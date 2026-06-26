@@ -18,6 +18,7 @@ class ExamAttempt extends Model
         'status',
         'started_at',
         'submitted_at',
+        'total_score',
     ];
 
     public function student()

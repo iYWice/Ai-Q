@@ -1,48 +1,136 @@
 @extends('layouts.app')
 
+@section('title','Exam Details')
+
 @section('content')
 
-<h1>{{ $exam->title }}</h1>
+<div class="max-w-6xl mx-auto">
 
-<p>
-Code: {{ $exam->exam_code }}
-</p>
+    <h1 class="text-3xl font-bold mb-2">
 
-<p>
-Status: {{ ucfirst($exam->status) }}
-</p>
+        {{ $exam->title }}
 
-<p>
-Total Questions:
-{{ $exam->questions->count() }}
-</p>
+    </h1>
 
-<a href="/teacher/exams/{{ $exam->id }}/questions/create"
-   class="btn btn-primary">
-   Add Question
-</a>
+    <p class="text-gray-500 mb-6">
 
-<hr>
+        Exam Code:
+        {{ $exam->exam_code }}
 
-@foreach($exam->questions as $question)
+    </p>
 
-<div class="card mb-3">
+    <div
+        class="bg-white shadow rounded p-6">
 
-    <div class="card-body">
+        <h2
+            class="text-2xl font-bold mb-5">
 
-        <strong>
-            {{ $question->question_text }}
-        </strong>
+            Student Attempts
 
-        <br>
+        </h2>
 
-        Type:
-        {{ ucfirst($question->question_type) }}
+        @forelse(
+            $exam->attempts
+            as $attempt
+        )
+
+            <div
+                class="border-b py-4 flex justify-between">
+
+                <div>
+
+                    <div
+                        class="font-semibold">
+
+                        {{ $attempt->student->name }}
+
+                    </div>
+
+                    <div
+                        class="text-gray-500 text-sm">
+
+                        Started:
+
+                        {{ $attempt->started_at }}
+
+                    </div>
+
+                </div>
+
+                <div
+                    class="text-right">
+
+                    @if(
+                        $attempt->status
+                        == 'ongoing'
+                    )
+
+                        <span
+                            class="bg-yellow-100
+                            text-yellow-700
+                            px-3 py-1 rounded">
+
+                            Taking Exam
+
+                        </span>
+
+                    @endif
+
+                    @if(
+                        $attempt->status
+                        == 'completed'
+                    )
+
+                        <div>
+
+                            <span
+                                class="bg-green-100
+                                text-green-700
+                                px-3 py-1 rounded">
+
+                                Completed
+
+                            </span>
+
+                        </div>
+
+                        <div
+                            class="mt-2">
+
+                            Score:
+
+                            <strong>
+
+                                {{ $attempt->score }}
+
+                                /
+
+                                {{ $attempt->total_score }}
+
+                            </strong>
+
+                        </div>
+
+                    @endif
+
+                </div>
+
+            </div>
+
+        @empty
+
+            <div
+                class="text-gray-500">
+
+                No students have
+                taken this exam yet.
+
+            </div>
+
+        @endforelse
 
     </div>
 
 </div>
-
-@endforeach
 
 @endsection

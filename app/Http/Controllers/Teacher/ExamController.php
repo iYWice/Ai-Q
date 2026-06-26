@@ -72,7 +72,9 @@ class ExamController extends Controller
      */
     public function show(Exam $exam)
     {
-        $exam->load('questions');
+        $exam->load(
+            'attempts.student'
+        );
 
         return view(
             'teacher.exams.show',

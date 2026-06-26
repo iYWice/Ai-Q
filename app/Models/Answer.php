@@ -21,6 +21,10 @@ class Answer extends Model
         'total_points',
         'passing_score',
         'status',
+        'attempt_id',
+        'question_id',
+        'answer_text',
+        'is_correct',
     ];
 
     public function attempt()

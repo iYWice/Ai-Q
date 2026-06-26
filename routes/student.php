@@ -30,7 +30,7 @@ Route::middleware(['auth', 'role:student'])->group(function () {
     Route::get(
         '/student/exam/{attempt}/take',
         [ExamAttemptController::class, 'takeExam']
-    );
+    )->name('student.exam.take');
 
     Route::post(
         '/student/exam/{attempt}/submit',
@@ -43,5 +43,12 @@ Route::middleware(['auth', 'role:student'])->group(function () {
 
         [ExamAttemptController::class, 'result']
 
+    )->name('student.exam.result');
+    Route::get(
+        '/student/exam/{attempt}/result',
+        [
+            ExamAttemptController::class,
+            'result'
+        ]
     )->name('student.exam.result');
 });
