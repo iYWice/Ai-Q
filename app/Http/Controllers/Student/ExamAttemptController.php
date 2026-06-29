@@ -20,11 +20,7 @@ class ExamAttemptController extends Controller
         return view('student.enter-code');
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Enter Exam Code
-    |--------------------------------------------------------------------------
-    */
+
     public function startExam(Request $request)
     {
         $request->validate([
@@ -61,11 +57,8 @@ class ExamAttemptController extends Controller
             ->first();
 
         /*
-        ------------------------------------------------
         Already Taken
-        ------------------------------------------------
         */
-
         if ($existingAttempt) {
 
             return redirect()->route(
@@ -81,9 +74,7 @@ class ExamAttemptController extends Controller
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Start Exam
-    |--------------------------------------------------------------------------
+    Start Exam
     */
     public function beginExam(Request $request)
     {
@@ -129,9 +120,7 @@ class ExamAttemptController extends Controller
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Take Exam
-    |--------------------------------------------------------------------------
+    Take Exam
     */
     public function takeExam(
         ExamAttempt $attempt
@@ -147,9 +136,7 @@ class ExamAttemptController extends Controller
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Submit Exam
-    |--------------------------------------------------------------------------
+    Submit Exam
     */
     public function submitExam(
         Request $request,
@@ -175,9 +162,7 @@ class ExamAttemptController extends Controller
             $isCorrect = false;
 
             /*
-            --------------------------------
             MCQ
-            --------------------------------
             */
 
             if (
@@ -194,9 +179,7 @@ class ExamAttemptController extends Controller
             }
 
             /*
-            --------------------------------
             TRUE / FALSE
-            --------------------------------
             */ elseif (
                 $question->question_type
                 == 'tf'
@@ -215,9 +198,7 @@ class ExamAttemptController extends Controller
             }
 
             /*
-            --------------------------------
             IDENTIFICATION
-            --------------------------------
             */ elseif (
                 $question->question_type
                 ==
@@ -237,9 +218,7 @@ class ExamAttemptController extends Controller
             }
 
             /*
-            --------------------------------
             Save Answer
-            --------------------------------
             */
 
             Answer::create([
@@ -269,9 +248,7 @@ class ExamAttemptController extends Controller
         }
 
         /*
-        --------------------------------
         Update Attempt
-        --------------------------------
         */
 
         $attempt->update([
@@ -297,9 +274,7 @@ class ExamAttemptController extends Controller
     }
 
     /*
-    |--------------------------------------------------------------------------
-    | Result Page
-    |--------------------------------------------------------------------------
+    Result Page
     */
     public function result(
         ExamAttempt $attempt

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ScoreForge AI</title>
+    <title>Ai-Q</title>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
@@ -16,7 +16,7 @@
 
             <div class="p-5 border-b border-slate-700">
                 <h1 class="text-xl font-bold">
-                    ScoreForge AI
+                    Ai-Q
                 </h1>
             </div>
 

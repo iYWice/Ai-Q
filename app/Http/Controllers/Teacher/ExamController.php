@@ -12,8 +12,8 @@ use App\Models\Question;
 
 class ExamController extends Controller
 {
-    /**
-     * Display a listing of the resource.
+    /*
+     Display exams
      */
 
     public function index()
@@ -24,8 +24,8 @@ class ExamController extends Controller
         return view('teacher.exams.index', compact('exams'));
     }
 
-    /**
-     * Show the form for creating a new resource.
+    /*
+     Show the form for creating an exam
      */
     public function create()
     {
@@ -36,8 +36,8 @@ class ExamController extends Controller
     }
 
 
-    /**
-     * Store a newly created resource in storage.
+    /*
+     Store a newly created exam in storage.
      */
     public function store(Request $request)
     {
@@ -67,8 +67,8 @@ class ExamController extends Controller
     }
 
 
-    /**
-     * Display the specified resource.
+    /*
+     Display the specified exam.
      */
     public function show(Exam $exam)
     {
@@ -82,8 +82,8 @@ class ExamController extends Controller
         );
     }
 
-    /**
-     * Show the form for editing the specified resource.
+    /*
+     Show the form for editing the specified exam.
      */
     public function edit(Exam $exam)
     {
@@ -104,8 +104,8 @@ class ExamController extends Controller
         );
     }
 
-    /**
-     * Update the specified resource in storage.
+    /*
+     Update the specified exam in storage.
      */
     public function update(Request $request, Exam $exam)
     {
@@ -142,8 +142,8 @@ class ExamController extends Controller
             ->with('success', 'Exam updated successfully.');
     }
 
-    /**
-     * Remove the specified resource from storage.
+    /*
+     Remove the specified exam from storage.
      */
     public function destroy(Exam $exam)
     {
@@ -171,6 +171,9 @@ class ExamController extends Controller
 
         return $code;
     }
+    /*
+     Update the status of the specified exam.
+     */
     public function updateStatus(Request $request, Exam $exam)
     {
         $request->validate([
